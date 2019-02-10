@@ -27,14 +27,15 @@ class L3Classifier:
     def train_and_predict(self, train: pd.DataFrame,
                           test: pd.DataFrame,
                           columns: list = None,
-                          rule_set: str = 'all',  # all, top, level1
+                          rule_set: str = 'all',  # all, level1, perc, top
                           top_count: int = None,
+                          perc_count: int = None,
                           save_train_data_file: bool = False) -> list:
         stem = train.name
         file = '{}.data'.format(stem)
 
         # training stage
-        self.train(train, columns, rule_set, top_count, save_train_data_file)
+        self.train(train, columns, rule_set, top_count, perc_count, save_train_data_file)
 
         # classification stage
         if not columns:
@@ -55,12 +56,15 @@ class L3Classifier:
 
     def train(self, train: pd.DataFrame,
               columns: list = None,
-              rule_set: str = 'all',  # all, top, level1
+              rule_set: str = 'all',  # all, level1, perc, top
               top_count: int = None,
+              perc_count: int = None,
               save_train_data_file: bool = False):
 
-        if rule_set not in ['all', 'top', 'level1']:
+        if rule_set not in ['all', 'level1', 'perc', 'top']:
             raise ValueError("rule_set specified is not valid")
+        if rule_set == 'perc' and not perc_count > 0:
+            raise ValueError("perc_count must be greater than zero")
         if rule_set == 'top' and not top_count > 0:
             raise ValueError("top_count must be greater than zero")
 
@@ -83,7 +87,25 @@ class L3Classifier:
             stdout=subprocess.DEVNULL
         )
 
-        if rule_set == 'top':
+        # if rule_set == 'all': do nothing, it's all set
+        if rule_set == 'perc':
+            # store ${perc_count}% rules and dump them on the same file, then empty level 2
+            with open(self.LEVEL1_FILE, 'r') as fp:
+                rules = fp.readlines()
+                rules_count = len(rules)
+                rules_to_take = int(rules_count * perc_count / 100)
+
+                # enforce at least one rule in the model
+                if rules_to_take == 0:
+                    rules_to_take = 1
+
+                top_rules = rules[:rules_to_take]
+            with open(self.LEVEL1_FILE, 'w') as fp:
+                fp.writelines(top_rules)
+
+            open(self.LEVEL2_FILE, 'w').close()
+
+        elif rule_set == 'top':
             # store top k rules and dump them on the same file, then empty level 2
             with open(self.LEVEL1_FILE, 'r') as fp:
                 top_rules = [x for x in fp.readlines()[:top_count]]
