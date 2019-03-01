@@ -91,16 +91,19 @@ class L3Classifier:
         if rule_set == 'perc':
             # store ${perc_count}% rules and dump them on the same file, then empty level 2
             with open(self.LEVEL1_FILE, 'r') as fp:
-                rules = fp.readlines()
-                rules_count = len(rules)
+
+                rules_count = sum([1 for _ in fp])
                 rules_to_take = int(rules_count * perc_count / 100)
 
                 # enforce at least one rule in the model
                 if rules_to_take == 0:
                     rules_to_take = 1
 
-                top_rules = rules[:rules_to_take]
+                fp.seek(0, 0)
+                top_rules = [fp.readline() for _ in range(rules_to_take)]
+
             with open(self.LEVEL1_FILE, 'w') as fp:
+                # does not add line separators
                 fp.writelines(top_rules)
 
             open(self.LEVEL2_FILE, 'w').close()
@@ -108,7 +111,8 @@ class L3Classifier:
         elif rule_set == 'top':
             # store top k rules and dump them on the same file, then empty level 2
             with open(self.LEVEL1_FILE, 'r') as fp:
-                top_rules = [x for x in fp.readlines()[:top_count]]
+                top_rules = [fp.readline() for _ in range(top_count)]
+                # top_rules = [x for x in fp.readlines()[:top_count]]
             with open(self.LEVEL1_FILE, 'w') as fp:
                 fp.writelines(top_rules)
 
