@@ -24,6 +24,7 @@ setup(
 
     description="A simple Python 3 wrapper around L3 binaries.",
     long_description=read("README.rst"),
+    long_description_content_type="text/x-rst",
 
     packages=find_packages(exclude=('tests',)),
 
