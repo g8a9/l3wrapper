@@ -1,6 +1,8 @@
 import subprocess
 import os
 import pandas as pd
+from l3wrapper.dictionary import *
+import logging
 
 
 class L3Classifier:
@@ -24,18 +26,25 @@ class L3Classifier:
         self.train_bin_path = os.path.join(self.l3_root, self.BIN_DIR, self.TRAIN_BIN)
         self.classify_bin_path = os.path.join(self.l3_root, self.BIN_DIR, self.CLASSIFY_BIN)
 
+        self.rule_statistics = RuleStatistics()
+
+        self.logger = logging.getLogger(__name__)
+
     def train_and_predict(self, train: pd.DataFrame,
                           test: pd.DataFrame,
                           columns: list = None,
                           rule_set: str = 'all',  # all, level1, perc, top
                           top_count: int = None,
                           perc_count: int = None,
-                          save_train_data_file: bool = False) -> list:
+                          save_train_data_file: bool = False,
+                          filtering_rules: dict = None,
+                          rule_dictionary: RuleDictionary = None) -> list:
         stem = train.name
         file = '{}.data'.format(stem)
 
         # training stage
-        self.train(train, columns, rule_set, top_count, perc_count, save_train_data_file)
+        self.train(train, columns, rule_set, top_count, perc_count, save_train_data_file, filtering_rules,
+                   rule_dictionary)
 
         # classification stage
         if not columns:
@@ -59,7 +68,9 @@ class L3Classifier:
               rule_set: str = 'all',  # all, level1, perc, top
               top_count: int = None,
               perc_count: int = None,
-              save_train_data_file: bool = False):
+              save_train_data_file: bool = False,
+              filtering_rules: dict = None,
+              rule_dictionary: RuleDictionary = None):
 
         if rule_set not in ['all', 'level1', 'perc', 'top']:
             raise ValueError("rule_set specified is not valid")
@@ -119,11 +130,55 @@ class L3Classifier:
             open(self.LEVEL2_FILE, 'w').close()
 
         elif rule_set == 'level1':
-            # empty level 2 rules
-            open(self.LEVEL2_FILE, 'w').close()
+            open(self.LEVEL2_FILE, 'w').close()     # empty level 2 rules
 
         if save_train_data_file:  # rename it to not lose it
             os.rename(file, '{}-train.data'.format(stem))
+
+        if filtering_rules:
+            class_dict = read_class_dict(stem)                                      # read L3 introduced mappings
+            feature_dict = read_feature_dict(stem)
+            retained_rules = []
+
+            with open(self.LEVEL1_FILE, 'r') as fp:
+                rules_count = 0
+                line = fp.readline().strip('\n')
+
+                while line:                                                         # one rule at a time
+                    rule = extract_rule(line, 'rule_{}'.format(rules_count + 1), class_dict)
+                    self.rule_statistics.rules += [rule]                            # TODO high memory usage!
+                    should_discard_rule = False
+
+                    for f_rule_id, f_rule in filtering_rules.items():               # one filter rule at a time
+                        filter_triggers = 0
+
+                        for l3_idx in rule.items:
+                            attr_idx, attr_val = feature_dict[l3_idx]               # 1-indexed indices
+                            if attr_idx > 21:                                       # consider only technical indicators
+                                continue
+                            if columns:                                             # find the name of the feature
+                                feature_name = columns[attr_idx - 1]
+                            else:
+                                feature_name = train.columns.values[attr_idx - 1]
+                            interval_name = rule_dictionary.dict[feature_name][attr_val]
+                            if interval_name in f_rule['items'] and rule.label == f_rule['target']:
+                                filter_triggers += 1
+
+                        if filter_triggers >= f_rule['sensitivity']:                 # should discard this rule
+                            should_discard_rule = True
+                            break
+
+                    if not should_discard_rule:
+                        retained_rules += ['{}\n'.format(line)]
+
+                    rules_count += 1
+                    line = fp.readline().strip('\n')
+
+            with open(self.LEVEL1_FILE, 'w') as fp:
+                fp.writelines(retained_rules)
+
+            self.rule_statistics.original_sizes += [rules_count]
+            self.rule_statistics.filtered_sizes += [len(retained_rules)]
 
     def predict(self, data, model_dir: str, columns: list = None) -> list:
 
