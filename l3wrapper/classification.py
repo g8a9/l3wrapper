@@ -4,6 +4,9 @@ import pandas as pd
 from l3wrapper.dictionary import *
 import logging
 
+FILTER_LVL1 = 1
+FILTER_LVL2 = 2
+FILTER_LVL12 = 12
 
 class L3Classifier:
 
@@ -15,6 +18,9 @@ class L3Classifier:
     LEVEL2_FILE = "livelloII.txt"
     LEVEL1_FILE_READABLE = "livelloI_readable.txt"
     LEVEL2_FILE_READABLE = "livelloII_readable.txt"
+    FILTER_LEVEL1 = ''
+    FILTER_LEVEL2 = ''
+    FILTER_BOTH = ''
 
     def __init__(self, minsup, minconf, l3_root: str):
         self.minsup = minsup
@@ -36,6 +42,7 @@ class L3Classifier:
                           top_count: int = None,
                           perc_count: int = None,
                           save_train_data_file: bool = False,
+                          filter_level: str = None,
                           filtering_rules: dict = None,
                           rule_dictionary: RuleDictionary = None) -> list:
         stem = train.name
@@ -43,7 +50,9 @@ class L3Classifier:
 
         # training stage
         self.train(train, columns=columns, rule_set=rule_set, top_count=top_count, perc_count=perc_count,
-                   save_train_data_file=save_train_data_file, rule_dictionary=rule_dictionary)
+                   save_train_data_file=save_train_data_file,
+                   filtering_rules=filtering_rules,
+                   filter_level=filter_level, rule_dictionary=rule_dictionary)
 
         # classification stage
         if not columns:
@@ -141,32 +150,58 @@ class L3Classifier:
         if save_train_data_file:  # rename it to not lose it
             os.rename(file, '{}-train.data'.format(stem))
 
+        class_dict = read_class_dict(stem)  # read L3 introduced mappings
+        item_dict = read_item_dict(stem)
+        lvl1_raw_r, lvl1_r = [], []
+        lvl2_raw_r, lvl2_r = [], []
+
+        if not filtering_rules:
+            raise RuntimeError('Filtering rules are not filled')
+
+        # filter rules beforehand, do not save the original ones
+        if filter_level == FILTER_LVL1:
+            lvl1_raw_r, lvl1_r = self.filter_level_rules(self.LEVEL1_FILE, rule_dictionary, filtering_rules, class_dict,
+                                                         item_dict, train, feature_names)
+            with open(self.LEVEL1_FILE, 'w') as fp:
+                    [fp.write(r) for r in lvl1_raw_r]
+
+        elif filter_level == FILTER_LVL2:
+            lvl2_raw_r, lvl2_r = self.filter_level_rules(self.LEVEL2_FILE, rule_dictionary, filtering_rules, class_dict,
+                                                         item_dict, train, feature_names)
+            with open(self.LEVEL2_FILE, 'w') as fp:
+                    [fp.write(r) for r in lvl2_raw_r]
+
+        elif filter_level == FILTER_LVL12:
+            lvl1_raw_r, lvl1_r = self.filter_level_rules(self.LEVEL1_FILE, rule_dictionary, filtering_rules, class_dict,
+                                                         item_dict, train, feature_names)
+            lvl2_raw_r, lvl2_r = self.filter_level_rules(self.LEVEL2_FILE, rule_dictionary, filtering_rules, class_dict,
+                                                         item_dict, train, feature_names)
+            with open(self.LEVEL1_FILE, 'w') as fp:
+                    [fp.write(r) for r in lvl1_raw_r]
+            with open(self.LEVEL2_FILE, 'w') as fp:
+                    [fp.write(r) for r in lvl2_raw_r]
+
         # translate the model to human readable format
-        level1_rules = []
-        level2_rules = []
         if save_human_readable:
-            class_dict = read_class_dict(stem)  # read L3 introduced mappings
-            item_dict = read_item_dict(stem)
-            with open(self.LEVEL1_FILE, 'r') as fp:
-                for i, line in enumerate(fp):
-                    level1_rules.append(extract_rule(line.strip('\n'), 'rule_{}'.format(i), class_dict, feature_names))
-            with open(self.LEVEL2_FILE, 'r') as fp:
-                for i, line in enumerate(fp):
-                    level2_rules.append(extract_rule(line.strip('\n'), 'rule_{}'.format(i), class_dict, feature_names))
-            with open(self.LEVEL1_FILE_READABLE, 'w') as fp:
-                [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in level1_rules]
-            with open(self.LEVEL2_FILE_READABLE, 'w') as fp:
-                [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in level2_rules]
+            # here the filter procedure has already parsed the rule to be retained
+            if filter_level:
+                with open(self.LEVEL1_FILE_READABLE, 'w') as fp:
+                    [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in lvl1_r]
+                with open(self.LEVEL2_FILE_READABLE, 'w') as fp:
+                    [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in lvl2_r]
+            else:
+                # parse all the rules and save them
+                with open(self.LEVEL1_FILE, 'r') as fp:
+                    for i, line in enumerate(fp):
+                        lvl1_r.append(extract_rule(line.strip('\n'), 'rule_{}'.format(i), class_dict, feature_names))
+                with open(self.LEVEL2_FILE, 'r') as fp:
+                    for i, line in enumerate(fp):
+                        lvl2_r.append(extract_rule(line.strip('\n'), 'rule_{}'.format(i), class_dict, feature_names))
+                with open(self.LEVEL1_FILE_READABLE, 'w') as fp:
+                    [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in lvl1_r]
+                with open(self.LEVEL2_FILE_READABLE, 'w') as fp:
+                    [fp.write('{}\n'.format(r.to_string(item_dict, rule_dictionary))) for r in lvl2_r]
 
-
-        # if filter_level:
-        #
-        #
-        # # process level 1
-        #
-        #
-        # if save_rules_readable_format:
-        #     self.rule_statistics.save_rules_readable_format('{}_readable_rules.txt'.format(stem))
 
     def predict(self, data, model_dir: str, columns: list = None) -> list:
 
@@ -210,30 +245,24 @@ class L3Classifier:
         return classification
 
     def filter_level_rules(self, level_file: str, rule_dictionary: RuleDictionary,
-                           filtering_rules: dict, class_dict: dict, feature_dict: dict, train, columns):
+                           filtering_rules: dict, class_dict: dict, item_dict: dict,
+                           train: pd.DataFrame, feature_names):
         retained_rules_raw = []
-        retained_rules = []
+        retained_rules_readable = []
 
         with open(level_file, 'r') as fp:
-            rules_count = 0
-            line = fp.readline().strip('\n')
-
-            while line:  # one rule at a time
-                rule = extract_rule(line, 'rule_{}'.format(rules_count + 1), class_dict)
-                self.rule_statistics.rules.append(rule)  # TODO high memory usage!
+            for i, line in enumerate(fp):
+                rule = extract_rule(line.strip('\n'), 'rule_{}'.format(i), class_dict, feature_names)
                 should_discard_rule = False
 
-                for f_rule_id, f_rule in filtering_rules.items():  # one filter rule at a time
+                for f_rule_id, f_rule in filtering_rules.items():
                     filter_triggers = 0
 
                     for l3_idx in rule.items:
-                        attr_idx, attr_val = feature_dict[l3_idx]  # 1-indexed indices
-                        if attr_idx > 21:  # consider only technical indicators
-                            continue
-                        if columns:  # find the name of the feature
-                            feature_name = columns[attr_idx - 1]
-                        else:
-                            feature_name = train.columns.values[attr_idx - 1]
+                        attr_idx, attr_val = item_dict[l3_idx]  # 1-indexed indices
+                        # if attr_idx > 21:  # consider only technical indicators
+                        #     continue
+                        feature_name = feature_names[attr_idx - 1]
                         interval_name = rule_dictionary.dict[feature_name][attr_val]
                         if interval_name in f_rule['items'] and rule.label == f_rule['target']:
                             filter_triggers += 1
@@ -244,14 +273,6 @@ class L3Classifier:
 
                 if not should_discard_rule:
                     retained_rules_raw.append(line)
-                    retained_rules.append(rule)
+                    retained_rules_readable.append(rule)
 
-                rules_count += 1
-                line = fp.readline().strip('\n')
-
-        with open(level_file, 'w') as fp:
-            [fp.write('{}\n'.format(l)) for l in retained_rules_raw]
-
-
-        self.rule_statistics.original_sizes += [rules_count]
-        self.rule_statistics.filtered_sizes += [len(retained_rules_raw)]
+        return retained_rules_raw, retained_rules_readable
