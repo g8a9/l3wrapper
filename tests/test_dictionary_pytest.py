@@ -12,7 +12,7 @@ def test_read_class_dict():
 
 
 def test_read_feature_dict():
-    feature_dict = read_feature_dict(stem)
-    assert len(feature_dict) == 74
-    for lab, tr in zip(feature_dict.keys(), range(1, 75)):
+    item_dict = read_item_dict(stem)
+    assert len(item_dict) == 74
+    for lab, tr in zip(item_dict.keys(), range(1, 75)):
         assert lab == tr
