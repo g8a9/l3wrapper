@@ -67,6 +67,7 @@ required_files = ["convertitoreRegCompatteNonCompatte",
                   "leggiBin",
                   "weka.jar"]
 
+logger = logging.getLogger(__file__)
 if not exists(bin_path):
     print(f"{','.join(required_files)} are missing.\n Downloading...")
     platform_download()
@@ -77,4 +78,4 @@ else:
         print(f"{','.join(missings)} are missing.\n Downloading...")
         platform_download()
     else:
-        print(f"L3C binaries are present. Using them for each classifier instance by default.")
+        logger.info(f"L3C binaries are present. Using them for each classifier instance by default.")

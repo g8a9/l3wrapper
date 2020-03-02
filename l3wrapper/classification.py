@@ -8,6 +8,9 @@ FILTER_LVL1 = 1
 FILTER_LVL2 = 2
 FILTER_LVL12 = 12
 
+raise RuntimeWarning("The usage of this module is deprecated.")
+
+
 class L3Classifier:
 
     BIN_DIR = "bin"
