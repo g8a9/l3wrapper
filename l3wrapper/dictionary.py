@@ -30,44 +30,32 @@ class RuleDictionary:
 
 
 class Rule:
-    def __init__(self,
-                 rule_id: str,
-                 label: str,
-                 support: int,
-                 confidence: float,
-                 items: [],
-                 feature_names: list,
-                 raw: str):
-        self.rule_id = rule_id
-        self.label = label
-        self.support = support
-        self.confidence = confidence
-        self.items = items
-        self.feature_names = feature_names
-        self.raw = raw
+    def __init__(self, raw_rule: str, rule_id: str):
+        """Extract a new rule from a string (raw rule).
 
-    def to_string(self, item_dict: dict, rule_dict: RuleDictionary):
+        The ID assigned to the rule is its position in the rules file (either lvl1 or lvl2).
+        Also, the Rule stores the list of items as they have been used in classification.
+        """
+        self.rule_id = rule_id
+        self.raw_rule = raw_rule
+
+        chunks = raw_rule.split(" ")
+        items = chunks[0]
+        self.items = [int(i) for i in items[1:-1].split(",")]
+        self._n_items = len(self.items)
+        self.label = int(chunks[2])
+        self.support = int(chunks[3])
+        self.confidence = float(chunks[4])
+
+    def get_readable_representation(self, item_dict: dict, class_dict: dict):
         readable_items = []
         for item_id in self.items:
-            feature_id, value = item_dict[item_id]
-            feature_name = self.feature_names[feature_id - 1]
-            item_as_string = (rule_dict.dict[feature_name])[value]
-            readable_items.append(item_as_string)
-        return '{},{},{},{},{}'.format(self.rule_id, ','.join(readable_items), self.label, self.support, self.confidence)
+            column_name, value = item_dict[item_id]
+            readable_items.append(f"{column_name}:{value}")
+        label = class_dict[self.label]
 
-    # def to_dict(self, rules_list, rules_dictionary: RuleDictionary):
-    #     d = {
-    #         "Name": self.name,
-    #         "Support": self.support,
-    #         "Confidence": self.confidence,
-    #         "Label": self.label,
-    #         "Items": []
-    #     }
-    #     for item in self.items:
-    #         index = int(item) - 1                       # comment this line if items numbering is 0-indexed
-    #         attribute, value = rules_list[index]
-    #         d["Items"] += [rules_dictionary[attribute][value]]
-    #     return d
+        # TODO Should the rule_id be included in the representation?
+        return f"{','.join(readable_items)}\t{label}\t{self.support}\t{self.confidence}\t{self._n_items}"
 
 
 def read_class_dict(stem: str) -> dict:
@@ -77,7 +65,7 @@ def read_class_dict(stem: str) -> dict:
     :return: class id dictionary
     """
     class_dict = {}
-    with open('{}.cls'.format(stem), 'r') as fp:
+    with open(f"{stem}.cls", "r") as fp:
         lines = [f.strip('\n') for f in fp.readlines()]
     label_id = int(lines[0])
     for label in lines[1:]:
@@ -86,7 +74,7 @@ def read_class_dict(stem: str) -> dict:
     return class_dict
 
 
-def read_item_dict(stem: str) -> dict:
+def read_item_dict(stem: str, column_names: list) -> dict:
     """
     Read numerical id assigned by L3 implementation to each pair (attribute_index,value).
     Note: attribute index is obtained enumerating of attributes, starting from 1.
@@ -94,30 +82,25 @@ def read_item_dict(stem: str) -> dict:
     :return: rule's item dictionary
     """
     item_dict = {}
-    with open('{}.diz'.format(stem), 'r') as fp:
+    with open(f"{stem}.diz", "r") as fp:
         lines = [l.strip('\n') for l in fp.readlines()]
         for line in lines:
             tok = line.split('>')               # e.g. 74->21,2
             item_id = int(tok[0][:-1])
             attrid_val_pair = tok[1].split(',')
-            item_dict[item_id] = (int(attrid_val_pair[0]), attrid_val_pair[1])
+            
+            attr_pos = int(attrid_val_pair[0])  # this is 1-based positional indexing
+            item_dict[item_id] = (column_names[attr_pos - 1], attrid_val_pair[1])
     return item_dict
 
 
-def extract_rule(raw_rule: str, rule_id: str, class_dict: {}, feature_names: list) -> Rule:
-    """Extract a new rule from a string (raw rule).
+def parse_raw_rules(filename: str):
+    rules = list()
+    with open(filename, 'r') as fp:
+        rules = [Rule(line.strip('\n'), f"rule_{i}") for (i, line) in enumerate(fp)]
+    return rules
 
-    The ID assigned to the rule is its position in the list. Also, the Rule stores the list
-    of features as they have been used in classification. This is necessary since L3 implementation
-    assigns to each item of the rule a positive integer id (starting from 1) representing a positional
-    index of the feature.
-    :return: the formatted rule (see Rule class)
-    """
-    chunks = raw_rule.split(" ")
-    items = chunks[0]
-    items = [int(i) for i in items[1:-1].split(",")]
-    raw_label = int(chunks[2])
-    label = class_dict[raw_label]
-    support = int(chunks[3])
-    confidence = float(chunks[4])
-    return Rule(rule_id, label, support, confidence, items, feature_names, raw_rule)
+
+def write_human_readable(filename: str, rules: list, item_dict: dict, class_dict: dict):
+    with open(filename, 'w') as fp:
+        [fp.write(f"{r.get_readable_representation(item_dict, class_dict)}\n") for r in rules]
