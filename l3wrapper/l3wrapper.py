@@ -188,6 +188,7 @@ class L3Classifier:
 
         return self._class_dict[most_common[0][0]]
 
+    # TODO change max_matching and strategy to constructor parameters
     def predict(self, X, n_jobs=1, max_matching=1, strategy='majority'):
         if not self._current_token:
             raise RuntimeError("You must fit the model to data first.")

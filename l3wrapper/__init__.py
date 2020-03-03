@@ -10,7 +10,7 @@ import zipfile
 import stat
 
 
-__version__ = '1.0.0'
+__version__ = '0.4.0'
 __author__ = 'Giuseppe Attanasio <giuseppe.attanasio@polito.it>'
 __all__ = []
 
@@ -23,7 +23,7 @@ bin_path = join(l3wrapper_data_path, "bin")
 if not exists(l3wrapper_data_path):
     print(f"Creating {l3wrapper_data_path} to store binaries")
     try:
-        mkdir(l3wrapper_path)
+        mkdir(l3wrapper_data_path)
     except:
         raise RuntimeError(f"Could not create {l3wrapper_data_path}")
 
@@ -64,8 +64,7 @@ required_files = ["convertitoreRegCompatteNonCompatte",
                   "fpMacroRulesClassiFiltriItem",
                   "L3CFiltriItemClassifica",
                   "L3CFiltriItemTrain",
-                  "leggiBin",
-                  "weka.jar"]
+                  "leggiBin"]
 
 logger = logging.getLogger(__file__)
 if not exists(bin_path):
