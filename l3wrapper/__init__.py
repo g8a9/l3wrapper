@@ -30,7 +30,7 @@ if not exists(l3wrapper_data_path):
 
 def platform_download():
     URL_OSX = "https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/02/L3C_osx1015.zip" 
-    URL_LINUX = None
+    URL_LINUX = "https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/03/L3C_ubuntu1804.zip"
     URL_WIN32 = None
 
     try:    
@@ -42,7 +42,12 @@ def platform_download():
                 for data in tqdm(r.iter_content(chunk_size=None)):
                     fp.write(data)
         elif platform == "linux":
-            raise NotImplementedError("Binaries for this OS are not available.")
+            filename = basename(URL_LINUX)
+            file_path = join(l3wrapper_data_path, filename)
+            r = requests.get(URL_LINUX, stream=True)
+            with open(file_path, "wb") as fp:
+                for data in tqdm(r.iter_content(chunk_size=None)):
+                    fp.write(data)
         elif platform == "win32":
             raise NotImplementedError("Binaries for this OS are not available.")
         else:
