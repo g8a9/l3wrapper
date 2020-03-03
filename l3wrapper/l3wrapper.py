@@ -100,6 +100,9 @@ class L3Classifier:
         self._n_classes = None
         self.labeled_transactions = list()
 
+    def __str__(self):
+        return f"L3Classifier(min_sup={self.min_sup},min_conf={self.min_conf})"
+
     def fit(self, X, y, column_names=None, save_human_readable=True, remove_files=True):
         """Fit the L3 model according to the given training data.
         
@@ -168,6 +171,8 @@ class L3Classifier:
 
         self._current_token = token
         self._n_fit += 1
+        
+        return self
 
     def _get_class_label(self, matching_rules: list):
         """TODO Important method to weight majority voting"""
