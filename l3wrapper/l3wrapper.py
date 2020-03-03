@@ -120,6 +120,10 @@ class L3Classifier:
         check_column_names(X, column_names)
         self._column_id_to_name = build_columns_dictionary(column_names)
 
+        # Reshape required if y is a vector array
+        if y.ndim == 1:
+            y = y.reshape(-1, 1)
+
         # Dump X and y in a single .data (csv) file. "y" target labels are inserted as the last column
         X_todump = np.hstack([X, y])
         _dump_array_to_file(X_todump, filestem, "data")
