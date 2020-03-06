@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """l3wrapper - A simple Python 3 wrapper around L3 binaries."""
 
 import logging
@@ -10,7 +11,7 @@ import zipfile
 import stat
 
 
-__version__ = '0.4.1'
+__version__ = '0.5.0'
 __author__ = 'Giuseppe Attanasio <giuseppe.attanasio@polito.it>'
 __all__ = []
 
@@ -29,11 +30,11 @@ if not exists(l3wrapper_data_path):
 
 
 def platform_download():
-    URL_OSX = "https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/02/L3C_osx1015.zip" 
+    URL_OSX = "https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/02/L3C_osx1015.zip"
     URL_LINUX = "https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/03/L3C_ubuntu1804.zip"
     URL_WIN32 = None
 
-    try:    
+    try:
         if platform == "darwin":
             filename = basename(URL_OSX)
             file_path = join(l3wrapper_data_path, filename)
