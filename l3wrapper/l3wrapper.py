@@ -56,7 +56,15 @@ def _remove_fit_files(filestem):
     
     Retain the .cls and .diz files. These are required by the classification module of L3.
     """
-    [remove(f"{filestem}{f}") for f in ["_stdout.txt", ".bin", ".data"]]
+    [remove(f"{filestem}{f}") for f in [
+        f"_{LEVEL1_FILE}",
+        f"_{LEVEL2_FILE}",
+        ".cls",
+        ".diz",
+        "_stdout.txt",
+        ".bin",
+        ".data"]
+    ]
 
 
 def _get_matching_rules(transaction, rules, max_matching):
@@ -142,7 +150,7 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
 
         return self._class_dict[most_common[0][0]]
 
-    def fit(self, X, y, column_names=None, save_human_readable=True, remove_files=True):
+    def fit(self, X, y, column_names=None, save_human_readable=False, remove_files=True):
         """A reference implementation of a fitting function for a classifier.
         Parameters
         ----------
