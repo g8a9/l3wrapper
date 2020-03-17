@@ -14,7 +14,7 @@ from l3wrapper.dictionary import build_class_dict, \
                                  write_human_readable, \
                                  build_columns_dictionary, \
                                  Transaction
-from l3wrapper.validation import check_column_names
+from l3wrapper.validation import check_column_names, check_dtype
 from joblib import Parallel, delayed
 import time
 from collections import Counter
@@ -22,7 +22,7 @@ from operator import itemgetter
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.multiclass import unique_labels, check_classification_targets
 import warnings
 
 
@@ -159,8 +159,8 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         self._classify_bin_path = join(self.l3_root, BIN_DIR, CLASSIFY_BIN)
         self._logger = logging.getLogger(__name__)
 
-        if np.issubdtype(X.dtype, np.number):
-            raise RuntimeError("L3 does not expect a numeric input. It leads to unacceptable results.")
+        X = check_dtype(X)
+        check_classification_targets(y)
 
         # Check that X and y have correct shape
         X, y = check_X_y(X, y, dtype=np.unicode_)

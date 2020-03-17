@@ -2,6 +2,7 @@
 """l3wrapper - A simple Python 3 wrapper around L3 binaries."""
 
 import logging
+import warnings
 from os import mkdir, listdir, remove, chmod
 from os.path import expanduser, exists, join, basename
 from sys import platform
@@ -22,7 +23,7 @@ l3wrapper_data_path = join(user_home, "l3wrapper_data")
 bin_path = join(l3wrapper_data_path, "bin")
 
 if not exists(l3wrapper_data_path):
-    print(f"Creating {l3wrapper_data_path} to store binaries")
+    logging.warn(f"Creating folder {l3wrapper_data_path} to store binaries")
     try:
         mkdir(l3wrapper_data_path)
     except:
@@ -62,7 +63,7 @@ def platform_download():
     # Give to the owner the executable permissions
     [chmod(join(l3wrapper_data_path, "bin", rf), stat.S_IRWXU) for rf in required_files]
 
-    print("Download completed")
+    logging.warn("Download completed")
 
 
 required_files = ["convertitoreRegCompatteNonCompatte",
@@ -74,13 +75,13 @@ required_files = ["convertitoreRegCompatteNonCompatte",
 
 logger = logging.getLogger(__file__)
 if not exists(bin_path):
-    print(f"{','.join(required_files)} are missing.\n Downloading...")
+    logging.warn(f"{','.join(required_files)} are missing.\n Downloading...")
     platform_download()
 else:
     binaries = listdir(bin_path)
     missings = [rf for rf in required_files if rf not in binaries]
     if missings:
-        print(f"{','.join(missings)} are missing.\n Downloading...")
+        logging.warn(f"{','.join(missings)} are missing.\n Downloading...")
         platform_download()
     else:
         logger.info(f"L3C binaries are present. Using them for each classifier instance by default.")
