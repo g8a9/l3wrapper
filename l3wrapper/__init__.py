@@ -12,7 +12,7 @@ import zipfile
 import stat
 
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 __author__ = 'Giuseppe Attanasio <giuseppe.attanasio@polito.it>'
 __all__ = []
 
