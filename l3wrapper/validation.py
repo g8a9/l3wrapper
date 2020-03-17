@@ -10,6 +10,10 @@ def check_column_names(X, column_names):
     if len(column_names) != X.shape[1]:
         raise ValueError("The number of column names and columns in X are different.")
 
+    for name in column_names:
+        if ":" in name:
+            raise ValueError("The character ':' is not allowed in column names.")
+
 
 def check_dtype(array):
     # pandas dataframe
