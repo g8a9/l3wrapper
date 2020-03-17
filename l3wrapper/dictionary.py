@@ -88,6 +88,12 @@ class Rule:
         return f"Rule(id:{self.rank};item_ids:{','.join(map(lambda x: str(x), self.item_ids))};sup:{self.support};conf:{self.confidence})"
 
 
+def build_y_mappings(y: np.array) -> dict:
+    orig_to_str = {label: str(label) for label in y}
+    str_to_orig = {v: k for k, v in orig_to_str.items()}
+    return orig_to_str, str_to_orig
+
+
 def build_class_dict(stem: str) -> dict:
     """
     Read numerical label id assigned by L3 implementation to class labels

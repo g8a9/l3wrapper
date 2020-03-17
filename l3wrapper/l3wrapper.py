@@ -13,7 +13,8 @@ from l3wrapper.dictionary import build_class_dict, \
                                  parse_raw_rules, \
                                  write_human_readable, \
                                  build_columns_dictionary, \
-                                 Transaction
+                                 Transaction, \
+                                 build_y_mappings
 from l3wrapper.validation import check_column_names, check_dtype
 from joblib import Parallel, delayed
 import time
@@ -150,6 +151,8 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
 
         return self._class_dict[most_common[0][0]]
 
+    
+
     def fit(self, X, y, column_names=None, save_human_readable=False, remove_files=True):
         """A reference implementation of a fitting function for a classifier.
         Parameters
@@ -173,8 +176,14 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         # Check that X and y have correct shape
         X, y = check_X_y(X, y, dtype=np.unicode_)
 
+        # Check that y has correct values according to sklearn's policy
+        unique = unique_labels(y)
+        # create mappings letting L3 binaries to work on strings only
+        self._yorig_to_str, self._ystr_to_orig = build_y_mappings(unique)
+        y = np.array([self._yorig_to_str[label] for label in y])
+
         # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        self.classes_ = [label for label in self._ystr_to_orig.keys()]
 
         # Define the label when no rule matches
         if self.assign_unlabeled == 'majority_class':
@@ -188,9 +197,8 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         token = secrets.token_hex(4)
         filestem = f"{token}"
 
-        # TODO the character ':' is not allowed in any column name, enforce this.
         # Create column names if not provided
-        if not column_names:
+        if column_names is None:
             column_names = _create_column_names(X)
         check_column_names(X, column_names)
         self._column_id_to_name = build_columns_dictionary(column_names)
@@ -274,7 +282,6 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         y_pred = list()
         for X_row in X:
             tr = Transaction(X_row, self._item_to_item_id)
-            class_priority = {k: 0 for k, v in self._class_dict.items()} # used the majority voting is even
             used_level = None
 
             # match against level 1
@@ -296,4 +303,5 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
             tr.used_level = used_level
             self.labeled_transactions_.append(tr)        # keep track of labeled transaction
 
+        y_pred = [self._ystr_to_orig[label] for label in y_pred]
         return np.array(y_pred)
