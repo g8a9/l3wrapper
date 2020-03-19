@@ -28,7 +28,7 @@ setup(
 
     packages=find_packages(exclude=('tests',)),
 
-    install_requires=['numpy', 'sklearn'],
+    install_requires=['numpy', 'sklearn', 'tqdm, 'requests'],
 
     classifiers=[
         'Development Status :: 4 - Beta',
