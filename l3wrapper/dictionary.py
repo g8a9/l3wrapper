@@ -125,7 +125,8 @@ def build_item_dictionaries(filestem: str) -> (dict, dict):
         for line in lines:
             tok = line.split('->')               # e.g. 74->21,2
             item_id = int(tok[0])
-            attrid_val_pair = tok[1].split(',')
+            right_end = "->".join(tok[1:])
+            attrid_val_pair = right_end.split(',')
             
             # L3 uses a 1-based positional indexing, hence save 'column_id' as 'attr_pos - 1'
             attr_pos = int(attrid_val_pair[0])
