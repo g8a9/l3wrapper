@@ -15,7 +15,7 @@ def read(filename):
 
 setup(
     name="l3wrapper",
-    version="0.6.1",
+    version="0.6.2",
     url="https://github.com/g8a9/l3wrapper",
     license='MIT',
 
@@ -28,7 +28,7 @@ setup(
 
     packages=find_packages(exclude=('tests',)),
 
-    install_requires=['numpy', 'sklearn', 'tqdm, 'requests'],
+    install_requires=['numpy', 'scikit-learn', 'tqdm, 'requests'],
 
     classifiers=[
         'Development Status :: 4 - Beta',
