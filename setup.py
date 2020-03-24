@@ -15,7 +15,7 @@ def read(filename):
 
 setup(
     name="l3wrapper",
-    version="0.6.2",
+    version="0.6.3",
     url="https://github.com/g8a9/l3wrapper",
     license='MIT',
 
