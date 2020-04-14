@@ -11,8 +11,8 @@ l3wrapper
 
 A Python 3 wrapper around Live-and-Let-Live (:math:`L^3`) classifier binaries implementing the ``scikit-learn`` estimator interface. The associative classifier was originally published in [#]_.
 
-When imported, the package will look for :math:`L^3` compiled binaries in the user's ``$HOME`` directory. If they are not found, it will download them.
-If you mind letting the wrapper do this for you, you can download the compiled binaries for `macOS Catalina <https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/02/L3C_osx1015.zip>`_ or `Ubuntu 18.04 <https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/03/L3C_ubuntu1804.zip>`_.
+When imported, the package looks for :math:`L^3` compiled binaries in the user's ``$HOME`` directory. If they are not found, it downloads them.
+If you mind letting the wrapper do this for you, you can download the binaries for `macOS Catalina <https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/02/L3C_osx1015.zip>`_ or `Ubuntu 18.04 <https://dbdmg.polito.it/wordpress/wp-content/uploads/2020/03/L3C_ubuntu1804.zip>`_.
 
 
 .. [#] Elena Baralis, Silvia Chiusano, and Paolo Garza. 2008. A Lazy Approach to Associative Classification. IEEE Trans. Knowl. Data Eng. 20, 2 (2008), 156–171. https://doi.org/10.1109/TKDE.2007.190677
@@ -72,7 +72,7 @@ The snippet will generate the *level1* and *level2* rule sets. An excerpt is:
 
 in the form::
 
-    <antecedent> <class label> <support count> <confidence (%)> <rule length>
+    <antecedent>\t<class label>\t<support count>\t<confidence(%)>\t<rule length>
 
 
 Known limitations
