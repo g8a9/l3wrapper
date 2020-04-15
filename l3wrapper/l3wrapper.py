@@ -1,6 +1,7 @@
 """
 Main module for the L3 wrapper.
 """
+
 import logging
 from os.path import isdir, join, exists
 from os import rename, remove
@@ -96,15 +97,16 @@ def _get_majority_class(y):
 
 
 class L3Classifier(BaseEstimator, ClassifierMixin):
-    """ Main class used as wrapper estimator around L3 binaries. 
-    
+    """ Main class used as wrapper estimator around L3 binaries.
+
     The model generation relies on L3 binaries strictly. While the generated rule sets are used
-    by the wrapper in the inference phase.  
-    
+    by the wrapper in the inference phase.
+
     Parameters
     ----------
-    demo_param : str, default='demo'
-        A parameter used for demonstation of how to pass and store paramters.
+    min_sup : float, default='0.01'
+        The minimum support threshold to be used while training.
+
     Attributes
     ----------
     X_ : ndarray, shape (n_samples, n_features)
@@ -133,7 +135,7 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
     def _more_tags(self):
         return {
             'requires_fit': True,
-            'allow_nan': False, 
+            'allow_nan': False,
             'X_types': ['2darray', 'string']
         }
 
@@ -150,8 +152,6 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         most_common = sorted(most_common, key=itemgetter(1), reverse=True)      # descending by matched count
 
         return self._class_dict[most_common[0][0]]
-
-    
 
     def fit(self, X, y, column_names=None, save_human_readable=False, remove_files=True):
         """A reference implementation of a fitting function for a classifier.
