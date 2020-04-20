@@ -1,5 +1,5 @@
 """
-Main module for the L3 wrapper estimator.
+The main module for the L3 estimator.
 """
 
 import logging
