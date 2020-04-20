@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 
 
@@ -35,9 +34,9 @@ class RuleDictionary:
 
 class Transaction:
     def __init__(self, row: np.array, item_to_item_id: dict):
-        # Extract items in the tuple form (column_id, value) 
+        # Extract items in the tuple form (column_id, value)
         self._items = [(c_id, c_val) for (c_id, c_val) in enumerate(row)]
-        
+
         # Associate to each item its 'item_id'
         self._item_ids = list()
         for item in self._items:
@@ -45,9 +44,9 @@ class Transaction:
                 self._item_ids.append(item_to_item_id[item])
             except KeyError:
                 self._item_ids.append(_UNKNOWN_ITEM)
-            
+
         self.item_ids_set = set(self._item_ids)
-        
+
         self.used_level = None
 
 
@@ -118,8 +117,9 @@ def build_item_dictionaries(filestem: str) -> (dict, dict):
     :param filestem: name of the dataset used for training
     :return:
     """
-    
-    item_id_to_item = {}                                            # item_id: (column_id, value)
+
+    # item_id: (column_id, value)
+    item_id_to_item = {}
     with open(f"{filestem}.diz", "r") as fp:
         lines = [l.strip('\n') for l in fp.readlines()]
         for line in lines:
@@ -127,13 +127,14 @@ def build_item_dictionaries(filestem: str) -> (dict, dict):
             item_id = int(tok[0])
             right_end = "->".join(tok[1:])
             attrid_val_pair = right_end.split(',')
-            
+
             # L3 uses a 1-based positional indexing, hence save 'column_id' as 'attr_pos - 1'
             attr_pos = int(attrid_val_pair[0])
             column_id = attr_pos - 1
             item_id_to_item[item_id] = (column_id, attrid_val_pair[1])
-    
-    item_to_item_id = {v: k for k, v in item_id_to_item.items()}    # (column_id, value): item_id
+
+    # (column_id, value): item_id
+    item_to_item_id = {v: k for k, v in item_id_to_item.items()}
     return item_id_to_item, item_to_item_id
 
 
@@ -144,7 +145,8 @@ def build_columns_dictionary(column_names: list):
 def parse_raw_rules(filename: str):
     rules = list()
     with open(filename, 'r') as fp:
-        rules = [Rule(line.strip('\n'), rank) for (rank, line) in enumerate(fp)]
+        rules = [Rule(line.strip('\n'), rank)
+                 for (rank, line) in enumerate(fp)]
     return rules
 
 
@@ -154,5 +156,5 @@ def write_human_readable(filename: str,
                          column_id_to_name: dict,
                          class_dict: dict):
     with open(filename, 'w') as fp:
-        [fp.write(f"{r.get_readable_representation(item_id_to_item, column_id_to_name, class_dict)}\n") \
+        [fp.write(f"{r.get_readable_representation(item_id_to_item, column_id_to_name, class_dict)}\n")
             for r in rules]
