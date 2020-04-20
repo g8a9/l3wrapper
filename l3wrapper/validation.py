@@ -1,3 +1,7 @@
+"""
+Provide several validation functions used by the estimator.
+"""
+
 import numpy as np
 
 
@@ -6,6 +10,7 @@ _NON_CATEGORICAL_ERROR = RuntimeError("L3 cannot handle numeric inputs. Use only
 
 
 def check_column_names(X, column_names):
+    """Check the column names specified by the user."""
     # TODO handle the case where X is a column vector
     if len(column_names) != X.shape[1]:
         raise ValueError("The number of column names and columns in X are different.")
@@ -16,6 +21,8 @@ def check_column_names(X, column_names):
 
 
 def check_dtype(array):
+    """Check the type of input values given by the user. No
+    :class:`numpy.number` is allowed."""
     # pandas dataframe
     if hasattr(array, "dtypes") and hasattr(array.dtypes, '__array__'):
         for dtype in list(array.dtypes):
