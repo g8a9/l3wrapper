@@ -21,8 +21,9 @@ project = 'l3wrapper'
 copyright = '2020, Giuseppe Attanasio'
 author = 'Giuseppe Attanasio'
 
+version = '0.6.3'
 # The full version, including alpha/beta/rc tags
-release = '0.6.3'
+release = '0.6.3-docs'
 
 
 # -- General configuration ---------------------------------------------------
@@ -43,6 +44,11 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None)
 }
 
+source_suffix = '.rst'
+
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'default'
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -58,7 +64,8 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+# html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -1,9 +1,16 @@
 l3wrapper
 =========
 
-.. image:: https://img.shields.io/pypi/v/l3wrapper.svg
+|pypi badge| |docs badge|
+
+.. |pypi badge| image:: https://img.shields.io/pypi/v/l3wrapper.svg
     :target: https://pypi.python.org/pypi/l3wrapper
     :alt: Latest PyPI version
+
+.. |Docs Badge| image:: https://readthedocs.org/projects/l3wrapper/badge/
+    :alt: Documentation Status
+    :scale: 100%
+    :target: http://l3wrapper.readthedocs.io
 
 .. .. image:: https://travis-ci.org/borntyping/cookiecutter-pypackage-minimal.png
 ..    :target: https://travis-ci.org/borntyping/cookiecutter-pypackage-minimal
