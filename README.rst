@@ -1,7 +1,7 @@
 l3wrapper
 =========
 
-|pypi badge| |docs badge|
+|pypi badge| |docs badge| |doi badge|
 
 .. |pypi badge| image:: https://img.shields.io/pypi/v/l3wrapper.svg
     :target: https://pypi.python.org/pypi/l3wrapper
@@ -11,6 +11,9 @@ l3wrapper
     :alt: Documentation Status
     :scale: 100%
     :target: http://l3wrapper.readthedocs.io
+
+.. |doi badge| image:: https://zenodo.org/badge/244676535.svg
+   :target: https://zenodo.org/badge/latestdoi/244676535
 
 .. .. image:: https://travis-ci.org/borntyping/cookiecutter-pypackage-minimal.png
 ..    :target: https://travis-ci.org/borntyping/cookiecutter-pypackage-minimal
