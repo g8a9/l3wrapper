@@ -181,7 +181,7 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         class_priority = {class_id : 0 for (class_id, _) in self._class_dict.items()}
         for rule in matching_rules:
             class_ids.append(rule.class_id)
-            class_priority[rule.class_id] += rule.rank
+            class_priority[rule.class_id] += rule.rule_id
 
         most_common = Counter(class_ids).most_common()
         most_common = sorted(most_common, key=lambda x: class_priority[x[0]])   # ascending by class priority

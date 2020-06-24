@@ -51,13 +51,19 @@ class Transaction:
 
 
 class Rule:
-    def __init__(self, raw_rule: str, rank: int):
+    def __init__(self, raw_rule: str, rule_id: int):
         """Extract a new rule from a string (raw rule).
 
-        The ID assigned to the rule is its position in the rules file (either lvl1 or lvl2).
-        Also, the Rule stores the list of items as they have been used in classification.
+        The Rule stores the list of items as they have been used in classification.
+
+        Parameters
+        ----------
+        raw_rule : str
+            A plain string as extracted by the L3 training.
+        rule_id : int
+            An integer corresponding to the rule id.
         """
-        self.rank = rank
+        self.rule_id = rule_id
         self.raw_rule = raw_rule
 
         chunks = raw_rule.split(" ")
@@ -70,15 +76,24 @@ class Rule:
         self.confidence = float(chunks[4])
 
     def get_readable_representation(self, item_id_to_item: dict, column_id_to_name: dict, class_dict: dict) -> str:
-        readable_items = []
-        for item_id in self.item_ids:
+        """Create a human readable representation of the rule.
+
+        Before getting to the final representation, the rule's items are sorted
+        by their respective column_id. As such, the represented itemset will begin
+        with items related to the first column, then to the second one, and so on.
+        """
+        readable_items = list()
+        sorted_items = sorted(
+            list(self.item_ids), key=lambda i: item_id_to_item[i][0]
+        )
+        for item_id in sorted_items:
             column_id, value = item_id_to_item[item_id]
             column_name = column_id_to_name[column_id]
             readable_items.append(f"{column_name}:{value}")
         label = class_dict[self.class_id]
 
         return (
-            f"{self.rank}\t"
+            f"{self.rule_id}\t"
             f"{','.join(readable_items)}\t"
             f"{label}\t"
             f"{self.support}\t"
@@ -90,7 +105,7 @@ class Rule:
         return self.item_ids.issubset(transaction.item_ids_set)
 
     def __repr__(self):
-        return f"Rule(id:{self.rank};item_ids:{','.join(map(lambda x: str(x), self.item_ids))};sup:{self.support};conf:{self.confidence})"
+        return f"Rule(id:{self.rule_id};item_ids:{','.join(map(lambda x: str(x), self.item_ids))};sup:{self.support};conf:{self.confidence})"
 
 
 def build_y_mappings(y: np.array) -> dict:
@@ -156,10 +171,23 @@ def build_columns_dictionary(column_names: list):
 
 
 def parse_raw_rules(filename: str):
+    """Given a file with raw rules, parse and extract a list of Rule.
+
+    The ID assigned to the rule is its position in the rules file (either lvl1 or lvl2).
+
+    Parameters
+    ----------
+    filename : str
+        Name of the file where the raw rules are saved.
+
+    Returns
+    -------
+    rules : list
+        A list of Rule extracted from <filename>.
+    """
     rules = list()
     with open(filename, 'r') as fp:
-        rules = [Rule(line.strip('\n'), rank)
-                 for (rank, line) in enumerate(fp)]
+        rules = [Rule(line.strip('\n'), rule_id) for (rule_id, line) in enumerate(fp)]
     return rules
 
 
