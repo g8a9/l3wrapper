@@ -301,6 +301,14 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         """Predict the class labels for each sample in X.
 
+        Additionally, the method helps to characterize the rules used during
+        the inference. Each record to be predicted is converted into a
+        Transaction and the list of transactions is saved.
+        From the transactions one can retrieve:
+            - which level was used to classify it (level=-1 means that no
+              rule has covered the record)
+            - which Rule (or rules) was used to classify it.
+
         Parameters
         ----------
         X : array-like, shape (n_samples, n_features)
@@ -319,9 +327,10 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
 
         self.labeled_transactions_ = list()
         y_pred = list()
+
+        # TODO evaluate parallelization here
         for X_row in X:
             tr = Transaction(X_row, self._item_to_item_id)
-            used_level = None
 
             # match against level 1
             matching_rules = _get_matching_rules(tr, self.lvl1_rules_, self.max_matching)
@@ -330,16 +339,16 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
             if not matching_rules:
                 matching_rules = _get_matching_rules(tr, self.lvl2_rules_, self.max_matching)
                 if matching_rules:
-                    used_level = 2
+                    tr.used_level = 2
             else:
-                used_level = 1
+                tr.used_level = 1
 
             if not matching_rules:
                 y_pred.append(self.unlabeled_class_)
             else:
                 y_pred.append(self._get_class_label(matching_rules))
+                tr.matched_rules = matching_rules
 
-            tr.used_level = used_level
             self.labeled_transactions_.append(tr)        # keep track of labeled transaction
 
         y_pred = [self._ystr_to_orig[label] for label in y_pred]

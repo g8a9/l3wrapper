@@ -13,12 +13,16 @@ def dataset_X_y():
     return X, y
 
 
-def test_training(dataset_X_y):
+def test_fit_predict(dataset_X_y):
     X, y = dataset_X_y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
     clf = L3Classifier().fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     assert y_pred.shape[0] == X_test.shape[0]
+    assert len(clf.labeled_transactions_) == X_test.shape[0]
+    print(clf.labeled_transactions_[1].matched_rules,
+            clf.labeled_transactions_[1].used_level)
+    print(len([t for t in clf.labeled_transactions_ if t.used_level == -1]))
 
 
 def test_save_human_readable(dataset_X_y):
@@ -35,6 +39,7 @@ def test_training_files(dataset_X_y):
     clf = L3Classifier().fit(X_train, y_train, remove_files=False)
     files = [f for f in os.listdir() if f.startswith(f"{clf.current_token_}")]
     assert len(files) == 7 # all the stuff left by L3 
+
 
 # column_names = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety']
 # 

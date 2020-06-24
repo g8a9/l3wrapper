@@ -46,8 +46,8 @@ class Transaction:
                 self._item_ids.append(_UNKNOWN_ITEM)
 
         self.item_ids_set = set(self._item_ids)
-
-        self.used_level = None
+        self.used_level = -1
+        self.matched_rules = None
 
 
 class Rule:
