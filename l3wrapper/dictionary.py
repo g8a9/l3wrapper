@@ -77,8 +77,14 @@ class Rule:
             readable_items.append(f"{column_name}:{value}")
         label = class_dict[self.class_id]
 
-        # TODO Should the rule_id be included in the representation?
-        return f"{','.join(readable_items)}\t{label}\t{self.support}\t{self.confidence}\t{self._n_items}"
+        return (
+            f"{self.rank}\t"
+            f"{','.join(readable_items)}\t"
+            f"{label}\t"
+            f"{self.support}\t"
+            f"{self.confidence}\t"
+            f"{self._n_items}"
+        )
 
     def match(self, transaction: Transaction) -> bool:
         return self.item_ids.issubset(transaction.item_ids_set)
@@ -110,12 +116,19 @@ def build_class_dict(stem: str) -> dict:
 
 
 def build_item_dictionaries(filestem: str) -> (dict, dict):
-    """Build two item dictionaries mapping ids created by L3.
-    TODO: add description
-    TODO: what are 'item_id' and 'item'? 
+    """Build two item dictionaries mapping the ids created by the L3 C binaries.
 
-    :param filestem: name of the dataset used for training
-    :return:
+    Parameters
+    ----------
+    filestem : str
+        The set of the training file. The methods will look for a file named <filestem>.diz
+
+    Returns
+    -------
+    item_id_to_item, item_to_item_id : (dict, dict)
+        A tuple containing as the first element a dictionary mapping from item
+        id to the tuple (column_id,value), and as second element a dictionary
+        with the inverse mapping.
     """
 
     # item_id: (column_id, value)
