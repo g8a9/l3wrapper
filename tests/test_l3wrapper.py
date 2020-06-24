@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 import os
+from joblib import dump, load
+import pickle
+
 
 @pytest.fixture
 def dataset_X_y():
@@ -39,6 +42,28 @@ def test_training_files(dataset_X_y):
     clf = L3Classifier().fit(X_train, y_train, remove_files=False)
     files = [f for f in os.listdir() if f.startswith(f"{clf.current_token_}")]
     assert len(files) == 7 # all the stuff left by L3 
+
+
+def test_save_load(dataset_X_y):
+    X, y = dataset_X_y
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+    clf = L3Classifier().fit(X_train, y_train)
+
+    dump(clf, "clf_pre_predict.joblib")
+
+    y_pred = clf.predict(X_test)
+    assert y_pred.shape[0] == X_test.shape[0]
+    assert len(clf.labeled_transactions_) == X_test.shape[0]
+
+    dump(clf, "clf.joblib")
+    clf_l = load("clf.joblib")
+    assert len(clf.lvl1_rules_) == len(clf_l.lvl1_rules_)
+
+    with open("clf.pickle", "wb") as fp:
+        pickle.dump(clf, fp)
+    with open("clf.pickle", "rb") as fp:
+        clf_l = pickle.load(fp)
+    assert len(clf.lvl2_rules_) == len(clf_l.lvl2_rules_)
 
 
 # column_names = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety']
