@@ -77,12 +77,12 @@ The snippet will generate the *level1* and *level2* rule sets. An excerpt is:
 
 ::
 
-    persons:4,safety:high,maint:low,buying:high acc 12 100.0 4
-    doors:2,buying:vhigh,safety:med,lug_boot:med unacc 11 100.0 4
+    0 persons:4,safety:high,maint:low,buying:high acc 12 100.0 4
+    1 doors:2,buying:vhigh,safety:med,lug_boot:med unacc 11 100.0 4
 
 in the form::
 
-    <antecedent>\t<class label>\t<support count>\t<confidence(%)>\t<rule length>
+    <rule_id>\t<antecedent>\t<class label>\t<support count>\t<confidence(%)>\t<rule length>
 
 
 Known limitations
