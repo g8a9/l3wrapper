@@ -234,7 +234,12 @@ class L3Classifier(BaseEstimator, ClassifierMixin):
         self.X_ = X
         self.y_ = y
 
-        tmp_dir = TemporaryDirectory()
+       token = secrets.token_hex(4)
+       filestem = f"{token}"
+       
+       tmp_dir = TemporaryDirectory(prefix=token)
+       old_dir = getcwd()
+       chdir(tmp_dir.name)
         old_dir = getcwd()
         chdir(tmp_dir.name)
 
