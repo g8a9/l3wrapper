@@ -88,8 +88,9 @@ in the form::
 Known limitations
 -----------------
 
-- The parallel training of multiple models cause failures (e.g. using ``GridSearchCV``, ``joblib`` or custom parallelism through ``multiprocessing`` with ``njobs>1``).
-
+- **fixed** *The parallel training of multiple models cause failures (e.g. using ``GridSearchCV``, ``joblib`` or custom parallelism through ``multiprocessing`` with ``njobs>1``).*
+- The scikit-learn's utility ``check_estimator`` still doesn't work, as
+  L3Classifier doesn't support numerical input.
 
 Compatibility
 -------------
