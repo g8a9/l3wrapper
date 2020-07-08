@@ -100,3 +100,19 @@ def test_grid_search(dataset_X_y, get_param_grid):
 
     print(clf.best_estimator_)
     print(clf.best_score_)
+
+
+def test_leve1_modifier(dataset_X_y):
+    X, y = dataset_X_y
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+    clf = L3Classifier(rule_sets_modifier='level1').fit(X, y)
+    assert clf.n_lvl2_rules_ == 0 and len(clf.lvl2_rules_) == 0
+
+    y_pred = clf.predict(X_test)
+    assert y_pred.shape[0] == X_test.shape[0]
+    assert len(clf.labeled_transactions_) == X_test.shape[0]
+    print(clf.labeled_transactions_[1].matched_rules,
+            clf.labeled_transactions_[1].used_level)
+    assert len([
+        t for t in clf.labeled_transactions_ if t.used_level == 2
+    ]) == 0
